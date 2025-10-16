@@ -1,0 +1,35 @@
+// BookDAO.java (method to add a book)
+import java.sql.*;
+
+public class BookDAO {
+    private static final String URL = "jdbc:mysql://localhost:3306/library_db";
+    private static final String USER = "dbuser";
+    private static final String PASS = "dbpassword";
+
+    public boolean addBook(Book book) {
+        String sql = "INSERT INTO books (isbn, title, author, publication_year, copies) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, book.getIsbn());
+            ps.setString(2, book.getTitle());
+            ps.setString(3, book.getAuthor());
+            ps.setInt(4, book.getPublicationYear());
+            ps.setInt(5, book.getCopies());
+
+            int rows = ps.executeUpdate();
+            return rows == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+
+// Simple Book POJO for context
+public class Book {
+    private String isbn, title, author;
+    private int publicationYear, copies;
+    // constructor, getters and setters
+}
