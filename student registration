@@ -1,0 +1,64 @@
+// In your Swing form class (e.g. StudentForm.java)
+import javax.swing.*;
+import java.awt.event.*;
+import java.sql.*;
+
+public class StudentForm extends JFrame {
+    private JTextField nameField, rollField, emailField;
+    private JButton submitBtn;
+
+    public StudentForm() {
+        nameField = new JTextField(20);
+        rollField = new JTextField(10);
+        emailField = new JTextField(20);
+        submitBtn = new JButton("Register");
+
+        submitBtn.addActionListener(e -> registerStudent());
+
+        // add components to frame... layout omitted for brevity
+    }
+
+    private void registerStudent() {
+        String name = nameField.getText().trim();
+        String roll = rollField.getText().trim();
+        String email = emailField.getText().trim();
+
+        if (name.isEmpty() || roll.isEmpty() || email.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields.");
+            return;
+        }
+
+        String sql = "INSERT INTO students (roll, name, email) VALUES (?, ?, ?)";
+        String url = "jdbc:mysql://localhost:3306/college_db";
+        String user = "dbuser";
+        String pass = "dbpassword";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roll);
+            ps.setString(2, name);
+            ps.setString(3, email);
+            int result = ps.executeUpdate();
+            if (result == 1) {
+                JOptionPane.showMessageDialog(this, "Student registered successfully.");
+                nameField.setText("");
+                rollField.setText("");
+                emailField.setText("");
+            } else {
+                JOptionPane.showMessageDialog(this, "Registration failed.");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "DB error: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            StudentForm f = new StudentForm();
+            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            f.pack();
+            f.setVisible(true);
+        });
+    }
+}
